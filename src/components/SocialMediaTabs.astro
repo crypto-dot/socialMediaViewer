@@ -1,0 +1,102 @@
+---
+// Define social media platforms with icons
+const platforms = [
+  { id: 'instagram', name: 'Instagram', icon: 'ri-instagram-line' },
+  { id: 'twitter', name: 'Twitter', icon: 'ri-twitter-x-line' },
+  { id: 'facebook', name: 'Facebook', icon: 'ri-facebook-circle-line' },
+  { id: 'tiktok', name: 'TikTok', icon: 'ri-tiktok-line' },
+  { id: 'youtube', name: 'YouTube', icon: 'ri-youtube-line' },
+  { id: 'linkedin', name: 'LinkedIn', icon: 'ri-linkedin-box-line' }
+];
+---
+
+<div class="tabs-container">
+  <div class="tabs">
+    {platforms.map((platform, index) => (
+      <button 
+        class="tab-button" 
+        data-platform={platform.id}
+        data-active={index === 0 ? 'true' : 'false'}
+      >
+        <i class={platform.icon}></i>
+        <span>{platform.name}</span>
+      </button>
+    ))}
+  </div>
+</div>
+
+<style>
+  .tabs-container {
+    margin-bottom: 2rem;
+  }
+  
+  .tabs {
+    display: flex;
+    gap: 0.25rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .tab-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    background: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+    color: var(--color-text-light);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  
+  .tab-button:hover {
+    color: var(--color-primary);
+    background-color: var(--color-bg-offset);
+  }
+  
+  .tab-button[data-active="true"] {
+    color: var(--color-primary);
+    background-color: var(--color-bg-offset);
+    border-bottom: 2px solid var(--color-primary);
+  }
+  
+  @media (max-width: 768px) {
+    .tab-button {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<script>
+  // Client-side JavaScript to handle tab switching
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Reset all tabs
+        tabButtons.forEach(btn => {
+          btn.setAttribute('data-active', 'false');
+        });
+        
+        // Set active tab
+        button.setAttribute('data-active', 'true');
+        
+        // Get platform
+        const platform = button.getAttribute('data-platform');
+        
+        // Dispatch custom event for the SocialMediaViewer to listen to
+        const event = new CustomEvent('platform-change', { 
+          detail: { platform } 
+        });
+        document.dispatchEvent(event);
+      });
+    });
+  });
+</script> 

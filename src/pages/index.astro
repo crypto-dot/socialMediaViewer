@@ -1,0 +1,53 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import SocialMediaTabs from '../components/SocialMediaTabs.astro';
+import ReactApp from '../components/ReactApp';
+---
+
+<MainLayout title="Social Media Viewer">
+  <main>
+    <div class="container">
+      <h1>Social Media Viewer</h1>
+      <p class="description">View any social media profile by entering their URL</p>
+      
+      <SocialMediaTabs />
+      <div id="react-root">
+        <ReactApp client:only="react" />
+      </div>
+    </div>
+  </main>
+</MainLayout>
+
+<script src="../scripts/tabs.js"></script>
+
+<style>
+  main {
+    padding: 2rem 0;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #1e293b;
+    text-align: center;
+  }
+  
+  .description {
+    font-size: 1.2rem;
+    color: #64748b;
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  
+  #react-root {
+    width: 100%;
+    background-color: var(--color-bg);
+    border-radius: 0.5rem;
+  }
+</style> 

@@ -1,0 +1,718 @@
+---
+import LoadingSpinner from './LoadingSpinner.astro';
+---
+
+<div class="social-media-viewer">
+  <!-- URL Input Form -->
+  <div class="url-input-container">
+    <form id="profile-form">
+      <div class="input-group">
+        <input 
+          type="url" 
+          id="profile-url" 
+          placeholder="Enter profile URL (e.g., https://instagram.com/username)" 
+          required
+        />
+        <button type="submit" class="submit-btn">View Profile</button>
+      </div>
+      <p class="helper-text">Enter the full URL of the profile you want to view</p>
+    </form>
+  </div>
+
+  <!-- Content Display Area -->
+  <div id="profile-content" class="profile-content">
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </div>
+      <h3>No Profile Loaded</h3>
+      <p>Enter a social media profile URL above to view their content</p>
+    </div>
+    
+    <!-- Loading Spinner (Hidden initially) -->
+    <div id="loading" class="loading-container hidden">
+      <LoadingSpinner />
+      <p>Loading profile data...</p>
+    </div>
+    
+    <!-- Profile Info (Hidden initially) -->
+    <div id="profile-info" class="profile-info hidden">
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <img id="profile-avatar" src="" alt="Profile avatar" />
+        </div>
+        <div class="profile-meta">
+          <h2 id="profile-name"></h2>
+          <p id="profile-username"></p>
+          <p id="profile-bio"></p>
+          <div class="profile-stats">
+            <div class="stat">
+              <span id="profile-posts-count">0</span>
+              <span>Posts</span>
+            </div>
+            <div class="stat">
+              <span id="profile-followers-count">0</span>
+              <span>Followers</span>
+            </div>
+            <div class="stat">
+              <span id="profile-following-count">0</span>
+              <span>Following</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="profile-content-grid" id="profile-grid">
+        <!-- Content will be populated here by JavaScript -->
+      </div>
+    </div>
+    
+    <!-- Error Display (Hidden initially) -->
+    <div id="error-message" class="error-message hidden">
+      <div class="error-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3>Could Not Load Profile</h3>
+      <p id="error-details">Unable to retrieve profile information. Please check the URL and try again.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .social-media-viewer {
+    background-color: var(--color-bg);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+  }
+  
+  .url-input-container {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .input-group {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  input[type="url"] {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    color: var(--color-text);
+    transition: border-color 0.2s ease;
+  }
+  
+  input[type="url"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+  
+  .submit-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .submit-btn:hover {
+    background-color: var(--color-primary-dark);
+  }
+  
+  .helper-text {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+  }
+  
+  .profile-content {
+    min-height: 400px;
+    padding: 2rem;
+  }
+  
+  .empty-state, .loading-container, .error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-text-light);
+  }
+  
+  .empty-icon, .error-icon {
+    margin-bottom: 1.5rem;
+    color: var(--color-text-light);
+  }
+  
+  .profile-info {
+    margin-top: 1rem;
+  }
+  
+  .profile-header {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--color-bg);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .profile-meta {
+    flex: 1;
+  }
+  
+  .profile-meta h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+    color: var(--color-text);
+  }
+  
+  .profile-meta p {
+    color: var(--color-text-light);
+  }
+  
+  #profile-bio {
+    margin: 0.75rem 0;
+    line-height: 1.5;
+  }
+  
+  .profile-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+  
+  .stat {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .stat span:first-child {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  
+  .stat span:last-child {
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+  }
+  
+  .profile-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  .content-item {
+    aspect-ratio: 1/1;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .content-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .content-item:hover img {
+    transform: scale(1.05);
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .error-message {
+    color: #ef4444;
+  }
+  
+  @media (max-width: 768px) {
+    .input-group {
+      flex-direction: column;
+    }
+    
+    .profile-header {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1rem;
+    }
+    
+    .profile-stats {
+      justify-content: center;
+    }
+  }
+  
+  .content-item.text-post {
+    background-color: var(--color-bg-offset);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .text-content {
+    line-height: 1.6;
+    color: var(--color-text);
+  }
+  
+  .text-content p {
+    margin: 0;
+  }
+  
+  .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+  
+  .video-icon {
+    font-size: 2.5rem;
+    color: white;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+  }
+</style>
+
+<script>
+  // Mock data for different social media platforms
+  interface ContentItem {
+    type: string;
+    url?: string;
+    thumbnail?: string;
+    content?: string;
+    text?: string;
+    title?: string;
+    likes?: number | string;
+    comments?: number | string;
+    retweets?: number | string;
+    views?: string;
+  }
+
+  interface SocialMediaProfile {
+    name: string;
+    username: string;
+    bio: string;
+    avatar: string;
+    stats: {
+      posts: string;
+      followers: string;
+      following: string;
+    };
+    content: ContentItem[];
+  }
+
+  interface MockData {
+    [platform: string]: SocialMediaProfile;
+  }
+
+  const mockData: MockData = {
+    instagram: {
+      name: "Instagram User",
+      username: "@instagram_user",
+      bio: "Digital creator | Photography enthusiast | Sharing moments from around the world ✈️ | DM for collaborations",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+      stats: {
+        posts: "217",
+        followers: "15.4K",
+        following: "324"
+      },
+      content: [
+        { 
+          type: "image", 
+          url: "https://images.unsplash.com/photo-1610650214064-99b19c7c773c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          likes: 432,
+          comments: 21
+        },
+        { 
+          type: "image", 
+          url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          likes: 1024,
+          comments: 98
+        },
+        { 
+          type: "image", 
+          url: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          likes: 543,
+          comments: 42
+        },
+        { 
+          type: "image", 
+          url: "https://images.unsplash.com/photo-1510626176961-4b57d4fbad03?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          likes: 876,
+          comments: 35
+        },
+        { 
+          type: "image", 
+          url: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          likes: 232,
+          comments: 15
+        },
+        { 
+          type: "image", 
+          url: "https://images.unsplash.com/photo-1554412933-514a83d2f3c8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          likes: 651,
+          comments: 29
+        }
+      ]
+    },
+    twitter: {
+      name: "Twitter User",
+      username: "@twitter_user",
+      bio: "Tech enthusiast | Web developer | Sharing thoughts about the digital world | Tweets are my own",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+      stats: {
+        posts: "3,412",
+        followers: "8.7K",
+        following: "512"
+      },
+      content: [
+        { 
+          type: "text", 
+          content: "Just launched a new website! Check it out at example.com #webdev #launch",
+          likes: 87,
+          retweets: 14,
+          comments: 8
+        },
+        { 
+          type: "text", 
+          content: "Interesting thread on the future of AI in software development. I believe we're just scratching the surface of what's possible. #AI #coding",
+          likes: 133,
+          retweets: 42,
+          comments: 17
+        },
+        { 
+          type: "text", 
+          content: "The key to productive coding sessions: good coffee, nice music, and zero notifications. What's your setup?",
+          likes: 214,
+          retweets: 28,
+          comments: 54
+        }
+      ]
+    },
+    facebook: {
+      name: "Facebook User",
+      username: "facebook.user",
+      bio: "Living life to the fullest | Travel | Food | Family",
+      avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+      stats: {
+        posts: "482",
+        followers: "1.2K",
+        following: "315"
+      },
+      content: [
+        { 
+          type: "image", 
+          url: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          text: "Beautiful day at the beach with family! #SummerVibes",
+          likes: 98,
+          comments: 12
+        },
+        { 
+          type: "text", 
+          content: "So excited to announce that we're moving to a new city next month! Can't wait for this new chapter in our lives. ✨",
+          likes: 187,
+          comments: 43
+        },
+        { 
+          type: "image", 
+          url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          text: "Dinner with friends at the new restaurant downtown. The food was amazing!",
+          likes: 64,
+          comments: 7
+        }
+      ]
+    },
+    tiktok: {
+      name: "TikTok Creator",
+      username: "@tiktok_creator",
+      bio: "Making people smile | Daily content | DM for business inquiries",
+      avatar: "https://randomuser.me/api/portraits/women/22.jpg",
+      stats: {
+        posts: "124",
+        followers: "457K",
+        following: "86"
+      },
+      content: [
+        { 
+          type: "video", 
+          thumbnail: "https://images.unsplash.com/photo-1640159856195-3d05acc1ac8d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          views: "1.2M",
+          likes: "245K",
+        },
+        { 
+          type: "video", 
+          thumbnail: "https://images.unsplash.com/photo-1627315337860-d8050b008aca?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          views: "879K",
+          likes: "154K",
+        },
+        { 
+          type: "video", 
+          thumbnail: "https://images.unsplash.com/photo-1626379953822-baec19c3accd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          views: "2.3M",
+          likes: "512K",
+        }
+      ]
+    },
+    youtube: {
+      name: "YouTube Creator",
+      username: "youtube_creator",
+      bio: "Tech reviews | Tutorials | Vlogs | New videos every Tuesday and Friday",
+      avatar: "https://randomuser.me/api/portraits/men/76.jpg",
+      stats: {
+        posts: "87",
+        followers: "243K",
+        following: "15"
+      },
+      content: [
+        { 
+          type: "video", 
+          thumbnail: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          title: "Unboxing the Latest Smartphone - Is it Worth It?",
+          views: "127K",
+          likes: "8.4K",
+        },
+        { 
+          type: "video", 
+          thumbnail: "https://images.unsplash.com/photo-1574390353491-92705afa9be3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          title: "Learn Web Development in 30 Days - Complete Guide",
+          views: "324K",
+          likes: "24K",
+        },
+        { 
+          type: "video", 
+          thumbnail: "https://images.unsplash.com/photo-1696656490093-89d5fc05e252?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+          title: "A Day in My Life as a Content Creator",
+          views: "98K",
+          likes: "7.1K",
+        }
+      ]
+    },
+    linkedin: {
+      name: "LinkedIn Professional",
+      username: "linkedin-pro",
+      bio: "Senior Software Engineer | Web Development | Cloud Architecture | Open to new opportunities",
+      avatar: "https://randomuser.me/api/portraits/men/52.jpg",
+      stats: {
+        posts: "84",
+        followers: "2.8K",
+        following: "347"
+      },
+      content: [
+        { 
+          type: "text", 
+          content: "Excited to announce that I've just completed my AWS certification! Looking forward to applying these skills in my next project. #AWS #Certification #ProfessionalDevelopment",
+          likes: 142,
+          comments: 28
+        },
+        { 
+          type: "text", 
+          content: "Just published a new article on Medium about modern frontend development practices and how they're shaping the industry. Link in comments. #WebDev #Frontend",
+          likes: 87,
+          comments: 14
+        },
+        { 
+          type: "text", 
+          content: "Proud to share that our team has successfully launched the new company website, improving load times by 40% and increasing user engagement. #WebPerformance #UX",
+          likes: 234,
+          comments: 42
+        }
+      ]
+    }
+  };
+
+  // Client-side JavaScript to handle URL submission and platform switching
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set default platform
+    let currentPlatform = 'instagram';
+    
+    // Get DOM elements
+    const profileForm = document.getElementById('profile-form') as HTMLFormElement;
+    const profileUrl = document.getElementById('profile-url') as HTMLInputElement;
+    const loadingEl = document.getElementById('loading') as HTMLElement | null;
+    const profileInfoEl = document.getElementById('profile-info') as HTMLElement | null;
+    const errorMessageEl = document.getElementById('error-message') as HTMLElement | null;
+    const emptyStateEl = document.querySelector('.empty-state') as HTMLElement | null;
+    
+    // Profile information elements
+    const profileAvatar = document.getElementById('profile-avatar') as HTMLImageElement | null;
+    const profileName = document.getElementById('profile-name') as HTMLElement | null;
+    const profileUsername = document.getElementById('profile-username') as HTMLElement | null;
+    const profileBio = document.getElementById('profile-bio') as HTMLElement | null;
+    const profilePostsCount = document.getElementById('profile-posts-count') as HTMLElement | null;
+    const profileFollowersCount = document.getElementById('profile-followers-count') as HTMLElement | null;
+    const profileFollowingCount = document.getElementById('profile-following-count') as HTMLElement | null;
+    const profileGrid = document.getElementById('profile-grid') as HTMLElement | null;
+    
+    // Listen for platform change events
+    document.addEventListener('platform-change', ((event: CustomEvent) => {
+      currentPlatform = event.detail.platform;
+      
+      // Clear form
+      profileForm.reset();
+      
+      // Update placeholder based on platform
+      profileUrl.placeholder = `Enter ${currentPlatform} profile URL`;
+      
+      // Reset view to empty state
+      if (emptyStateEl) showElement(emptyStateEl);
+      if (profileInfoEl) hideElement(profileInfoEl);
+      if (loadingEl) hideElement(loadingEl);
+      if (errorMessageEl) hideElement(errorMessageEl);
+    }) as EventListener);
+    
+    // Handle form submission
+    if (profileForm) {
+      profileForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const url = profileUrl.value.trim();
+        
+        if (!url) return;
+        
+        // Show loading state
+        if (emptyStateEl) hideElement(emptyStateEl);
+        if (profileInfoEl) hideElement(profileInfoEl);
+        if (errorMessageEl) hideElement(errorMessageEl);
+        if (loadingEl) showElement(loadingEl);
+        
+        // Mock API call with timeout
+        setTimeout(() => {
+          try {
+            // For the demo, assume URL is valid but check if contains platform name
+            const lowercaseUrl = url.toLowerCase();
+            let foundPlatform = false;
+            
+            // For demo purposes, check if URL contains platform name
+            if (lowercaseUrl.includes(currentPlatform) || 
+                (currentPlatform === 'twitter' && lowercaseUrl.includes('x.com'))) {
+              
+              // Load mock data for the current platform
+              const data = mockData[currentPlatform];
+              
+              if (data) {
+                // Populate profile information
+                if (profileAvatar) profileAvatar.src = data.avatar;
+                if (profileName) profileName.textContent = data.name;
+                if (profileUsername) profileUsername.textContent = data.username;
+                if (profileBio) profileBio.textContent = data.bio;
+                if (profilePostsCount) profilePostsCount.textContent = data.stats.posts;
+                if (profileFollowersCount) profileFollowersCount.textContent = data.stats.followers;
+                if (profileFollowingCount) profileFollowingCount.textContent = data.stats.following;
+                
+                // Clear previous content
+                if (profileGrid) profileGrid.innerHTML = '';
+                
+                // Populate content grid
+                if (profileGrid) {
+                  data.content.forEach((item: ContentItem) => {
+                    let contentHtml = '';
+                    
+                    if (item.type === 'image' && item.url) {
+                      contentHtml = `
+                        <div class="content-item">
+                          <img src="${item.url}" alt="Content image" loading="lazy">
+                        </div>
+                      `;
+                    } else if (item.type === 'video' && item.thumbnail) {
+                      contentHtml = `
+                        <div class="content-item">
+                          <img src="${item.thumbnail}" alt="Video thumbnail" loading="lazy">
+                          <div class="video-overlay">
+                            <span class="video-icon">▶</span>
+                          </div>
+                        </div>
+                      `;
+                    } else if (item.type === 'text' && item.content) {
+                      contentHtml = `
+                        <div class="content-item text-post">
+                          <div class="text-content">
+                            <p>${item.content}</p>
+                          </div>
+                        </div>
+                      `;
+                    }
+                    
+                    profileGrid.innerHTML += contentHtml;
+                  });
+                }
+                
+                // Show profile information
+                if (loadingEl) hideElement(loadingEl);
+                if (emptyStateEl) hideElement(emptyStateEl);
+                if (errorMessageEl) hideElement(errorMessageEl);
+                if (profileInfoEl) showElement(profileInfoEl);
+                foundPlatform = true;
+              }
+            }
+            
+            if (!foundPlatform) {
+              throw new Error(`Could not find a valid ${currentPlatform} profile at this URL. Please check the URL and try again.`);
+            }
+            
+          } catch (error) {
+            // Show error message
+            const errorDetails = document.getElementById('error-details');
+            if (errorDetails) {
+              errorDetails.textContent = error instanceof Error ? error.message : 'An unknown error occurred';
+            }
+            if (loadingEl) hideElement(loadingEl);
+            if (emptyStateEl) hideElement(emptyStateEl);
+            if (profileInfoEl) hideElement(profileInfoEl);
+            if (errorMessageEl) showElement(errorMessageEl);
+          }
+        }, 1500); // Simulate network delay
+      });
+    }
+    
+    // Helper functions to show/hide elements
+    function showElement(element: HTMLElement): void {
+      element.classList.remove('hidden');
+    }
+    
+    function hideElement(element: HTMLElement): void {
+      element.classList.add('hidden');
+    }
+  });
+</script> 
